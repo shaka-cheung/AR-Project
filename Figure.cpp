@@ -65,32 +65,35 @@ float* Figure::getMatrix(){
 	return resultMatrix;
 }
 
-void Figure::rotateToOpponent()
-{
-	float vector[3];
-	vector[0] = lookAtMatrix[3] - resultMatrix[3];
-	vector[1] = lookAtMatrix[7] - resultMatrix[7];
-	vector[2] = lookAtMatrix[11] - resultMatrix[11];
-	
-	//normalize vector
+void normalize(float vector[3]){
 	float help = sqrt( vector[0]*vector[0] + vector[1]*vector[1] + vector[2]*vector[2] );
 	vector[0] /= help;
 	vector[1] /= help;
 	vector[2] /= help;
+}
 
-	float defaultLook[4] = {1,0,0,0};
-	multMatrix(resultMatrix, defaultLook);
-
-	//normalize look
-	help = sqrt( look[0]*look[0] + look[1]*look[1] + look[2]*look[2] );
-	look[0] /= help;
-	look[1] /= help;
-	look[2] /= help;
-
-	float angle = (180 / PI) * acos( vector[0] * look[0] + vector[1] * look[1] + vector[2] * look[2] );
-	if((vector[0] * look[1] - vector[1] * look[0]) < 0 ) angle *= -1;
+void Figure::rotateToOpponent()
+{
+	if(lookAtMatrix&&resultMatrix){
+		float vector[3];
+		vector[0] = lookAtMatrix[3] - resultMatrix[3];
+		vector[1] = lookAtMatrix[7] - resultMatrix[7];
+		vector[2] = lookAtMatrix[11] - resultMatrix[11];
 	
-	glRotatef(angle, 0, 0, 1);
+		//normalize vector
+		normalize(vector);
+
+		float defaultLook[4] = {1,0,0,0};
+		multMatrix(resultMatrix, defaultLook);
+
+		//normalize look
+		normalize(look);
+
+		float angle = (180 / PI) * acos( vector[0] * look[0] + vector[1] * look[1] + vector[2] * look[2] );
+		if((vector[0] * look[1] - vector[1] * look[0]) < 0 ) angle *= -1;
+	
+		glRotatef(angle, 0, 0, 1);
+	}
 }
 
 void Figure::draw(){
@@ -102,19 +105,19 @@ void Figure::draw(){
 
 		glLoadMatrixf(resultTransposedMatrix);
 
+		if(currentlyDown) {
+			glRotatef(a.angle, 0, 1, 0);
+			rotateToOpponent();
+		}
+		if(currentlyBeating) {
+			rotateToOpponent();
+		}
+
 		glRotatef(-90, 1, 0, 0 );
 		glScalef(0.03, 0.03, 0.03);
 
 		// animate
-		animate();
 		glTranslatef(0.0, currHeight, 0.0);
-
-		if(currentlyDown) {
-			glRotatef(a.angle, 1, 0, 0);
-			rotateToOpponent();
-		}
-
-		if(currentlyBeating) rotateToOpponent();
 	
 		// draw body
 		glColor4f(c.r,c.g,c.b,c.a);
@@ -153,7 +156,7 @@ void Figure::draw(){
 			glTranslatef(0.0, -1.3*rad, (rad*1.2*1.0)/2.5);
 			glRotatef(45+a.angle, 0, 1, 0);
 			GLUquadricObj *quadObj = gluNewQuadric();
-			gluCylinder(quadObj, rad/20, rad/5, rad*2, 20, 10);
+			gluCylinder(quadObj, rad/20, rad/5, rad*5, 20, 10);
 			glPopMatrix();
 		}
 
@@ -174,46 +177,48 @@ void Figure::draw(){
 }
 
 void Figure::invokeAnimation(Type t){
-	float startTime = glutGet(GLUT_ELAPSED_TIME);
-	a.type = t;
-	a.startTime = startTime;
-	a.angle = 0;
-	a.dropDown = -1;
-	a.tearTrans = -1;
-	switch (t){
-		case START:
-			a.time = 1000;
-			a.heightJumpTears = 1;
-			a.timesJump = 1;	
-		break;
-		case BEAT:
-			a.time = 5000;
-			a.heightJumpTears = 1;
-			a.timesJump = 10;
-			currentlyBeating = true;
-		break;
-		case DEFEAT:
-			a.time = 3000;
-			a.heightJumpTears = 0.5*rad;
-			a.timesJump = 0.5;
-			a.dropDown=0;
-			a.tearTrans = 0.375*rad+2*rad/10.0;
-			currentlyDown = true;
-		break;
-		case WIN:
-			a.time = 3000;
-			a.heightJumpTears = 1.5;
-			a.timesJump = 7;
-		break;
+	if(a.startTime<0){
+		float startTime = glutGet(GLUT_ELAPSED_TIME);
+		a.type = t;
+		a.startTime = startTime;
+		a.angle = 0;
+		a.dropDown = -1;
+		a.tearTrans = -1;
+		switch (t){
+			case START:
+				a.time = 1000;
+				a.heightJumpTears = 1;
+				a.timesJump = 1;	
+			break;
+			case BEAT:
+				a.time = 5000;
+				a.heightJumpTears = 1;
+				a.timesJump = 10;
+				currentlyBeating = true;
+			break;
+			case DEFEAT:
+				a.time = 5000;
+				a.heightJumpTears = 0.5*rad;
+				a.timesJump = 0.5;
+				a.dropDown=0;
+				a.tearTrans = 0.375*rad+2*rad/10.0;
+				currentlyDown = true;
+			break;
+			case WIN:
+				a.time = 3000;
+				a.heightJumpTears = 1.5;
+				a.timesJump = 7;
+			break;
 
-		case VIC:
-			a.time = 9000;
-			a.heightJumpTears = 1.5;
-			a.timesJump = 12;
-		break;
+			case VIC:
+				a.time = 9000;
+				a.heightJumpTears = 1.5;
+				a.timesJump = 12;
+			break;
 	
+		}
+		a.endTime = startTime + a.time;
 	}
-	a.endTime = startTime + a.time;
 }
 
 void Figure::animate(){
@@ -223,7 +228,7 @@ void Figure::animate(){
 			case BEAT:
 				currHeight = jump(time);
 				if(currentlyBeating){
-					if(a.angle>=90) currentlyBeating = false;
+					if(a.angle>=90) a.angle = 90;
 					else a.angle += ((time-a.startTime)*45)/(0.5*a.time);
 				}
 			break;
@@ -242,6 +247,7 @@ void Figure::animate(){
 		}
 	}else if(a.startTime>0) {
 		a.startTime=-1;
+		currHeight=0;
 		if(currentlyBeating) currentlyBeating=false;
 		if(currentlyDown) currentlyDown=false;
 	}

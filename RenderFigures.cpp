@@ -16,15 +16,12 @@
 
 using namespace std;
 
-// Added in Exercise 9 - Start *****************************************************************
 #define PI 3.14159265
 
-struct Position { double x,y,z; };
+// Marie-Lena: removed some variables
+
 // Marie-Lena
 std::map<int,Figure> figures;
-
-bool debugmode = false;
-// Added in Exercise 9 - End *****************************************************************
 
 int thresh = 100;
 CvCapture* cap;
@@ -34,17 +31,13 @@ int bw_thresh = 100;
 CvMemStorage* memStorage;
 
 // Added in Exercise 9 - Start *****************************************************************
-// Marie-Lena: removed matrices
-float snowmanLookVector[4];
-int towards = 0x005A;
-int towardsList[2] = {0x005a, 0x0272};
-int towardscounter = 0;
+// Marie-Lena: removed variables
 // Added in Exercise 9 - End *****************************************************************
 
 //camera settings
-const int width = 640/2; 
-const int height = 480/2;
-const int camangle = 70/2;
+const int width = 640; 
+const int height = 480;
+const int camangle = 70;
 
 unsigned char bkgnd[width*height*3];
 
@@ -58,7 +51,7 @@ void bw_trackbarHandler(int pos) {
 
 void initVideoStream() {
 	cap = cvCaptureFromCAM (0);
-	cap = false;
+	//cap = false;
 
 	if (!cap) {
 		cout << "No webcam found, using video file\n";
@@ -89,55 +82,7 @@ int subpixSampleSafe ( const IplImage* pSrc, CvPoint2D32f p )
 	return a + ( ( dy * ( b - a) ) >> 8 );
 }
 
-// Added in Exercise 9 - Start *****************************************************************
-void multMatrix(float mat[16], float vec[4])
-{
-	for(int i=0; i<4; i++)
-	{
-		snowmanLookVector[i] = 0;
-		for(int j=0; j<4; j++)
-			  snowmanLookVector[i] += mat[4*i + j] * vec[j];
-	}
-}
-
-// Marie-Lena: remove moveBall
-
-void rotateToMarker(float thisMarker[16], float lookAtMarker[16], int markernumber)
-{
-	float vector[3];
-	vector[0] = lookAtMarker[3] - thisMarker[3];
-	vector[1] = lookAtMarker[7] - thisMarker[7];
-	vector[2] = lookAtMarker[11] - thisMarker[11];
-
-	if(towards == markernumber) ;
-	
-	//normalize vector
-	float help = sqrt( vector[0]*vector[0] + vector[1]*vector[1] + vector[2]*vector[2] );
-	vector[0] /= help;
-	vector[1] /= help;
-	vector[2] /= help;
-
-	if(debugmode) std::cout << "Vector: " << vector[0] << ", " << vector[1] << ", " << vector[2] << std::endl;
-
-	float defaultLook[4] = {1,0,0,0};
-	multMatrix(thisMarker, defaultLook);
-
-	//normalize snowmanLookVector
-	help = sqrt( snowmanLookVector[0]*snowmanLookVector[0] + snowmanLookVector[1]*snowmanLookVector[1] + snowmanLookVector[2]*snowmanLookVector[2] );
-	snowmanLookVector[0] /= help;
-	snowmanLookVector[1] /= help;
-	snowmanLookVector[2] /= help;
-
-	if(debugmode) std::cout << "SnowmanLookVector: " << snowmanLookVector[0] << ", " << snowmanLookVector[1] << ", " << snowmanLookVector[2] << std::endl;
-
-	float angle = (180 / PI) * acos( vector[0] * snowmanLookVector[0] + vector[1] * snowmanLookVector[1] + vector[2] * snowmanLookVector[2] );
-	if((vector[0] * snowmanLookVector[1] - vector[1] * snowmanLookVector[0]) < 0 ) angle *= -1;
-	
-	if(debugmode) std::cout << "Angle: " << angle << std::endl;
-	
-	glRotatef(angle, 0, 0, 1);
-}
-// Added in Exercise 9 - End *****************************************************************
+// Marie-Lena: removed methods
 
 void init()
 {
@@ -582,9 +527,7 @@ void idle()
 
 	int key = cvWaitKey (10);
 	if (key == 27) exit(0);
-	// Added in Exercise 9 - Start *****************************************************************
-	else if (key == 100) debugmode = !debugmode;
-	// Added in Exercise 9 - End *****************************************************************
+	// Marie-Lena removed debug
 
 	glutPostRedisplay();
 }
@@ -600,47 +543,6 @@ void cleanup()
 	cvDestroyWindow ("Marker");
 	cout << "Finished\n";
 }
-
-// Added in Exercise 9 - Start *****************************************************************
-void drawSnowman( bool female )
-{
-	glRotatef( -90, 1, 0, 0 );
-	glScalef(0.03, 0.03, 0.03);
-
-	// draw 3 white spheres
-	glColor4f( 1.0, 1.0, 1.0, 1.0 );
-	glutSolidSphere( 0.8, 10, 10 );
-	glTranslatef( 0.0, 0.8, 0.0 );
-	glutSolidSphere( 0.6, 10, 10 );
-	if(female)
-	{
-		glPushMatrix();
-		glRotatef(90, 0, 1, 0);
-		glTranslatef(-0.2, 0.05, 0.3);
-		glutSolidSphere(0.32, 10, 10);
-		glTranslatef(0.4, 0, 0);
-		glutSolidSphere(0.32, 10, 10);
-		glPopMatrix();
-	}
-	glTranslatef( 0.0, 0.6, 0.0 );
-	glutSolidSphere( 0.4, 10, 10 );
-
-	// draw the eyes
-	glPushMatrix();
-	glColor4f( 0.0, 0.0, 0.0, 1.0 );
-	glTranslatef( 0.2, 0.2, 0.2 );
-	glutSolidSphere( 0.066, 10, 10 );
-	glTranslatef( 0, 0, -0.4 );
-	glutSolidSphere( 0.066, 10, 10 );
-	glPopMatrix();
-
-	// draw a nose
-	glColor4f( 1.0, 0.5, 0.0, 1.0 );
-	glTranslatef( 0.3, 0.0, 0.0 );
-	glRotatef( 90, 0, 1, 0 );
-	glutSolidCone( 0.1, 0.3, 10, 1 );
-}
-// Added in Exercise 9 - End *****************************************************************
 
 void display() 
 {
@@ -675,21 +577,10 @@ void display()
 	if(currentTime%5000>500&&currentTime%5000<1000){
 		figures[0x005a].setLookAtMatrix(figures[0x0272].getMatrix());
 		figures[0x0272].setLookAtMatrix(figures[0x005a].getMatrix());
-		figures[0x005a].invokeAnimation(Figure::BEAT);
-		figures[0x0272].invokeAnimation(Figure::DEFEAT);
+		figures[0x005a].invokeAnimation(Figure::DEFEAT);
+		figures[0x0272].invokeAnimation(Figure::BEAT);
 	}
-	/*
-	if(currentTime>2000&&currentTime<3000) {
-		figures[0x005a]->invokeAnimation(Figure::BEAT);
-		figures[0x0272]->invokeAnimation(Figure::DEFEAT);
-	}
-	if(currentTime>10000&&currentTime<11000) figures[0x005a]->invokeAnimation(Figure::WIN);
-	if(currentTime>14000&&currentTime<15000) figures[0x005a]->invokeAnimation(Figure::VIC);
-	*/
 	
-	// TODO: look vector (only) here
-	//rotateToMarker(resultMatrix_005A, resultMatrix_0272, 0x005a);
-
 	// Marie-Lena
 	// all markers, all figures
 	for (auto it=figures.begin(); it!=figures.end(); ++it){
@@ -727,12 +618,11 @@ void resize( int w, int h)
 
 // Marie-Lena
 void createFigures(){
-	const int markerIDs[2] = {0x005a,0x0272};
-	// int markerIDs[16] = {0x005a,0x0272,3,4,5,6,7,8,9,10,11,12,13,14,15,16};
+	int markerIDs[16] = {0x005a,0x0272,3,4,5,6,7,8,9,10,11,12,13,14,15,16};
 	bool female = false;
 	bool small = false;
 	int color = 0;
-	for(int i = 0; i<2; i++){
+	for(int i = 0; i<16; i++){
 		figures[markerIDs[i]] = Figure(color,small,female);
 		if(!small&&!female) small = true;
 		else if(small&&!female) female = true;
@@ -742,6 +632,15 @@ void createFigures(){
 			color++;
 		}
 	}
+}
+
+void timer( int value ) {
+	// animate figures
+	for (auto it=figures.begin(); it!=figures.end(); ++it){
+		it->second.animate();
+	}
+	glutTimerFunc(25, timer, 0);
+	glutPostRedisplay();
 }
 
 int main(int argc, char* argv[]) 
@@ -787,6 +686,7 @@ int main(int argc, char* argv[])
     // make functions known to GLUT
     glutDisplayFunc( display );
     glutReshapeFunc( resize  );
+	glutTimerFunc( 25, timer, 0 );
     glutIdleFunc( idle );
 
     // setup OpenCV

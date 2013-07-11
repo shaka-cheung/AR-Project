@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <math.h>
 #include "glut.h"
 
 #define PI 3.14159265
