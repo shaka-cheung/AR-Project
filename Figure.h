@@ -3,31 +3,45 @@
 #include "glut.h"
 
 #define PI 3.14159265
+using namespace std;
+
+struct color{
+	GLfloat r;
+	GLfloat b;
+	GLfloat g;
+	GLfloat a;
+};
 
 class Figure
 {
 public:
-	Figure(float r, float g, float b, float a, bool small, bool female);
+	Figure(int color, bool small, bool female);
+	Figure(void);
 	~Figure(void);
-	struct color{
-		GLfloat r;
-		GLfloat b;
-		GLfloat g;
-		GLfloat a;
-	};
+	
 	enum Type {START, BEAT, DEFEAT, WIN, VIC};
+	void setMatrix(float resultMatrix[16]);
+	void setLookAtMatrix(float resultMatrix[16]);
+	float* getMatrix();
 	void draw();
-	void startAnimation(Type t, float start);
-	void animate(float time);
+	void invokeAnimation(Type t);
+	void animate();
 private:
 	bool small;
 	bool female;
 	GLdouble rad;
-	GLfloat currHeight;
 	color c;
-
+	
+	float look[4];
+	GLfloat currHeight;
 	bool currentlyBeating;
 	bool currentlyDown;
+	float resultMatrix[16];
+	float lookAtMatrix[16];
+
+	float jump(float time);
+	void multMatrix(float mat[16], float vec[4]);
+	void rotateToOpponent();
 
 	struct Animation 
 	{
@@ -40,8 +54,6 @@ private:
 		float angle;
 		float dropDown;
 		float tearTrans;
-	};
-	Animation a;
-	float jump(float time);
+	} a;
 };
 
