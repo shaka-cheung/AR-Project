@@ -22,7 +22,7 @@ Figure::Figure(int color, bool s, bool f)
 	c.a = 1;
 	small = s;
 	female = f;
-	rad = 0.8;
+	rad = 1;
 	if(small) rad/=1.5;
 	currentlyBeating = false;
 	currentlyDown = false;
@@ -106,8 +106,8 @@ void Figure::draw(){
 		glLoadMatrixf(resultTransposedMatrix);
 
 		if(currentlyDown) {
-			glRotatef(a.angle, 0, 1, 0);
 			rotateToOpponent();
+			glRotatef(a.angle, 1, 0, 0);
 		}
 		if(currentlyBeating) {
 			rotateToOpponent();
