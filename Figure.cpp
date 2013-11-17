@@ -6,7 +6,7 @@ float getDist(float height, float trans, float rad){
 
 Figure::Figure(int color, bool s, bool f)
 {
-	// RED
+	// RED  Test
 	if(color == 0){
 		c.r = 1; c.g = 0; c.b = 0.3;
 	// BLUE TEST B
