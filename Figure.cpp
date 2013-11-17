@@ -9,7 +9,7 @@ Figure::Figure(int color, bool s, bool f)
 	// RED
 	if(color == 0){
 		c.r = 1; c.g = 0; c.b = 0.3;
-	// BLUE
+	// BLUE TEST B
 	}else if(color==1){
 		c.r = 0; c.g = 0; c.b = 1;
 	// YELLOW
